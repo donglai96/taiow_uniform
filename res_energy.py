@@ -53,14 +53,16 @@ def get_resonance_whistler(w, wpe,wce,  alpha, nres,psi):
 
     kpara = k*np.cos(psi)
 
-    get_resonance_velocity(w, kpara, alpha, wce, nres)
+    v_result = get_resonance_velocity(w, kpara, alpha, wce, nres)
+    v = v_result[0]
     if v< 0 :
         print('Check the pitch angle!')
         print('Changing the initial solution')
-        v = get_resonance_velocity(w, k, alpha, wce, nres)[1]
+        #raise Warning("The velocity is negative, use")
+        v = v_result[1]
     if np.abs(v) > cst.C:
         raise ValueError('The velocity is larger than light speed')
-    
+    print("The resonating velocity is ",v/cst.C,"c")
     gamma = 1 / (1 - (v**2)/cst.C**2)**0.5
     p = gamma * v * cst.Me
     return p, k

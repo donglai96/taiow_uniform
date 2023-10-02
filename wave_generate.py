@@ -23,7 +23,7 @@ class Waves_generate(object):
                        # this should be rad
         self.ws =frequencies
         self.w_width = w_width
-        self.nw = self.ws.shape[0]
+        self.nw = len(self.ws)
         print('total number of wave frequency is:',self.nw)
 
         if self.nw == 1:
@@ -142,3 +142,22 @@ class Waves_generate(object):
         self.Ewx = self.Bwy * Ex_By
         self.Ewy = self.Bwy * Ey_By
         self.Ewz = self.Bwy * Ez_By
+
+        np.random.seed(66)
+
+        self.phi0= np.random.rand(self.nw) * 2 * np.pi # 0 initial
+        print("The information of wave:")
+
+        print("The init phase:",self.phi0)
+        print("gyrofrequency:", self.wce)
+        print("plasmafrequency", self.wpe) 
+        print("wave number k", self.k)
+        print("wave frequency", self.ws)
+        
+        print("wave amplitude Ewx", self.Ewx)
+        print("wave amplitude Ewx", self.Ewy)
+        print("wave amplitude Ewx", self.Ewz)
+        print("wave amplitude Bwx", self.Bwx)
+        print("wave amplitude Bwy", self.Bwy)
+        print("wave amplitude Bwz", self.Bwz)
+        print("Initial phase", self.phi0)

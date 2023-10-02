@@ -51,8 +51,9 @@ class Wave:
         # calculate the wave phase
         # because uniform background, do not need the integral
         phi = self.k_vector.dot(r) - self.w * t + self.phi0
-
-        
+        # print('t',t,'phi',phi,'sinphi',ti.sin(phi))
+        # print('k',self.k,'r',r)
+        #print('t',t,'phi',phi,'sinphi',ti.sin(phi))
         self.Bw = [self.Bwx * ti.cos(phi),-1 * self.Bwy * ti.sin(phi), self.Bwz * ti.cos(phi)]
 
         self.Ew = [-1 * self.Ewx * ti.sin(phi), -1 * self.Ewy * ti.cos(phi), -1 * self.Ewz * ti.sin(phi)]
