@@ -3,7 +3,8 @@ from scipy import integrate
 import constants as cst
 from taichiphysics import *
 import random
-
+from scipy.special import erf
+from scipy import integrate
 
 
 
@@ -15,7 +16,7 @@ class Waves_generate(object):
     This code is just for initialization wave information
 
     """
-    def __init__(self,frequencies, B0, ne, Bw, psi ,w_width, distribution ="Gaussian"):
+    def __init__(self,frequencies, B0, ne, Bw, psi ,w_width, wm, distribution ="Gaussian"):
         self.ne = ne
         self.B0 = B0 # B0 is background and Bw is wave
         self.psi = psi # wave normal angle, this should have size with nw, each wave 
@@ -24,6 +25,8 @@ class Waves_generate(object):
         self.ws =frequencies
         self.w_width = w_width
         self.nw = len(self.ws)
+        self.Bw_square_w  = None
+        self.wm = wm 
         print('total number of wave frequency is:',self.nw)
 
         if self.nw == 1:
@@ -45,10 +48,10 @@ class Waves_generate(object):
             
             # A Guassian distribution
             if distribution == "Gaussian":
-                print("Using Guassian distribution of wave, it has some")
+                print("Using Guassian distribution of wave, it has some questions, the integral should not in this way")
                 for i in range(self.nw):
                     tmp = (self.ws[i] - self.w_m)/ self.w_width
-                    self.Bwy[i] = np.exp(-tmp**2)
+                    self.Bwy[i] = np.exp(-1 * tmp**2)
                     Power_sum_square += self.Bwy[i]
                 Power_sum = np.sqrt(Power_sum_square)
 
@@ -61,6 +64,18 @@ class Waves_generate(object):
                 #self.Bwy = Bw / np.sqrt(self.nw)
                 for i in range(self.nw):
                     self.Bwy[i] = Bw / np.sqrt(self.nw)
+            elif distribution == "Larry":
+
+
+                print("Using same distribution in Larry + 1973 and Galuert and Horne 2005")
+                self.Bw_square_w  = np.zeros(self.nw) #(Bwx**2 + Bwy**2 + Bwz**2)
+                self.w_m = (self.ws[-1] + self.ws[0])/2
+                A_square = 2 * Bw**2 / ((self.w_width) * np.sqrt(np.pi) * (erf((self.w_m - self.ws[0])/self.w_width) + erf((self.ws[1]- self.w_m )/self.w_width)))
+                for i in range(self.nw):
+                    tmp = (self.ws[i] - self.w_m)/ self.w_width
+                    self.Bw_square_w [i] = A_square * np.exp(-1 * tmp**2)
+
+
             else:
                 raise ValueError("Unknown distribution")
 
@@ -136,6 +151,14 @@ class Waves_generate(object):
         Ex_By = (PP - eta**2* sin**2)/(eta * PP * cos)
         Ey_By = DD * (PP - eta**2 * sin**2) / (eta*PP * cos * (eta**2 - SS ))  
         Ez_By = -1 * eta * sin / PP
+
+
+
+        if self.Bw_square_w is not None:
+            self.Bwy = np.sqrt(self.Bw_square_w / (0.5 + 0.5 *(Bx_By)**2 + 0.5 *(Bz_By)**2))
+            print("******************")
+            print("Using Gaussian distribution of wave")
+        
         self.Bwx = self.Bwy * Bx_By
         self.Bwz = self.Bwy * Bz_By
 

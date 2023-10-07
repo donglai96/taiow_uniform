@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
 
     # read the paras
+    print(paras)
     B0 = paras['B0']# Background magnetic field
     psi0 = np.deg2rad(paras['psi']) # wave normal angle
     wce = gyrofrequency(cst.Charge, cst.Me, B0)
@@ -52,12 +53,14 @@ if __name__ == '__main__':
     record_num = paras['record_num']
     dt_num =paras['dt_num']
     w_res_num =paras['w_res_num']
+    wm_num = paras['w_max_num'] # freqeucy where has maximum energy
     w_lc_num = paras['w_lc_num']
     w_uc_num = paras['w_uc_num']
     w_width_num = paras['w_width_num']
     nw = paras['nw']
     dz_num = paras['dz_num']
     Bw = paras['Bw']
+
     mass = cst.Me
     charge = cst.Charge * -1 # -1 is electron
     ########### init the taichi kernel
@@ -69,6 +72,7 @@ if __name__ == '__main__':
     #
     alpha = np.deg2rad(pitch_angle_degree) # pitch angle, notice the antidirection
     w = w_res_num * wce
+    wm = wm_num * wce
     w_lc = w_lc_num * wce
     w_uc = w_uc_num * wce
     w_width = w_width_num * wce
@@ -81,6 +85,11 @@ if __name__ == '__main__':
     
     print('E0 is ', erg2ev(p2e(p0))/1000, ' keV')
 
+    if paras['energy_keV'] > 0:
+        print("not using  the resonance energy but using the given energy")
+        E0 = paras['energy_keV']
+        print('E0 is ', E0, ' keV')
+        p0 = e2p(ev2erg(E0 * 1000) )
     gamma = (1 + p0**2 / (cst.Me**2*cst.C**2))**0.5
     wce_rel = wce/gamma
     T_gyro = 2 * np.pi/ wce_rel
@@ -92,13 +101,16 @@ if __name__ == '__main__':
     print(' total time is', t_total_num * T_gyro)
     print(' total time step is ', Nt)
     particles = Particle.field(shape = (Np,))
-
-    if nw > 1:
+    print("Wave distribution is ", wave_distribution)
+    print(wave_distribution == "Larry")
+    print(nw == 200)
+    if ((nw > 1) and (wave_distribution == "Constant")) :
         iw_res = int((w - w_lc) / ((w_uc - w_lc) / (nw - 1)))
         dw = (w_uc - w_lc) / (nw - 1)
         w_lc_temp = w - iw_res * dw; 
         ws = np.array([i * dw for i in range(nw)] ) + w_lc_temp
-        
+    elif ((nw > 1) and (wave_distribution == "Larry")):
+        ws = np.linspace(w_lc,w_uc,nw)
     else:
         ws = np.array([w])
     print('resonance frequency:',w)
@@ -136,7 +148,7 @@ if __name__ == '__main__':
 
 
     # init the wave
-    waves_init = Waves_generate(ws, B0, n0, Bw, psi0 ,w_width, distribution =wave_distribution)
+    waves_init = Waves_generate(ws, B0, n0, Bw, psi0 ,w_width, wm,distribution =wave_distribution)
     waves_init.generate_oblique_wave(wce,wpe)
 
     # init quantities in taichi scope
